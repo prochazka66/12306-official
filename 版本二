@@ -1,0 +1,289 @@
+#include <iostream>
+#include <iomanip>
+#include <cstring>
+#include <ctime>
+#include <fstream>
+#include <string.h>
+
+using namespace std;
+
+time_t t = time(NULL);  //设置当前时间
+
+int n = 0;  //总车次
+
+void menu();
+
+class bus   //车票车次类
+{
+public:
+    int hour;                           //发车时间（时）
+    int minute;                         //发车时间（分）
+    char start_station[20];             //起始站
+    char end_station[20];               //终点站
+    double runtime;                     //行车时间
+    int busload;                        //载客量
+    int ys;                             //已售票
+};
+
+class sy                                 //管理系统类
+{
+private:
+    bus bs;
+public:
+    void input();                       //录入车次信息
+    void browse();                      //浏览车次信息
+    void search_train();                //按车次查询
+    void search_station();              //按终点站查询
+    void sp();                          //售票
+    void tp();                          //退票
+    void display(int a);                //显示各车次信息
+    friend void save();                 //保存数据
+    friend void read();                 //初始化函数，读取"数据.txt"的数据
+};
+
+sy ticket[1000];
+
+/* 将车次信息存储在文本文件data.txt中 */
+void save()
+{
+    ofstream file("data.txt", ios_base::out);  // 使用 ios_base::out 模式以覆盖文件内容
+    int i;
+    for (i = 0; i < n; i++)
+    {
+        //file << i + 1 << " ";//序号
+        file << ticket[i].bs.hour << " ";
+        file << ticket[i].bs.minute << " ";
+        file << ticket[i].bs.start_station << " ";
+        file << ticket[i].bs.end_station << " ";
+        file << ticket[i].bs.runtime << " ";
+        file << ticket[i].bs.busload << " ";
+        file << ticket[i].bs.ys << endl;
+    }
+    file.close();
+    cout << "信息已存入文件" << endl;
+}
+
+/*  录入车次信息  */
+void sy::input()
+{
+    cout << "输入发车点数和分钟";
+    cin >> ticket[n].bs.hour >> ticket[n].bs.minute;
+    cout << "输入起站和终点站";
+    cin >> ticket[n].bs.start_station >> ticket[n].bs.end_station;
+    cout << "输入运行时间";
+    cin >> ticket[n].bs.runtime;
+    cout << "输入载客量";
+    cin >> ticket[n].bs.busload;
+    cout << "输入已售票";
+    cin >> ticket[n].bs.ys;
+    cout << "已经完成输入" << endl;
+    n++;
+    save();
+}
+
+/*  浏览车次信息  */
+void sy::browse()
+{
+    // 读取系统时间
+    tm* pt = localtime(&t);
+    cout << "当前时间: " << setw(2) << pt->tm_hour << ":";
+    cout << setw(2) << setfill('0') << pt->tm_min << endl;
+    // 输出UI
+    cout << "车次信息:" << endl;
+    cout << "班次号" << "\t发车时间" << "\t起始站" << "  \t终点站" << "  \t行车时间" << "  \t载客量" << "  \t已售票" << "  \t状态" << endl;
+    //cout << "班次号" << "\t发车时间" << "\t起始站" << "  \t终点站" << "  \t行车时间" << "  \t载客量" << "  \t已售票" << "  \t状态" << endl;
+    // 遍历数组输出文件中的车次信息,并判断是否已经发车
+    int j;
+    for (j = 0; j < n; j++)
+    {
+        ticket[j].display(j + 1);
+        cout << "\t\t";
+        if (ticket[j].bs.hour < pt->tm_hour ||
+            (ticket[j].bs.hour == pt->tm_hour && ticket[j].bs.minute <= pt->tm_min))
+        {
+            cout << "此班已发出" << endl;
+        }
+        else
+        {
+            cout << "此班未发出" << endl;
+        }
+    }
+}
+
+/*  显示  */
+void sy::display(int a)
+{
+    cout << a << "\t" << bs.hour << ":";
+    if (bs.minute == 0)
+    {
+        cout << "00";
+    }
+    else
+    {
+        cout << bs.minute;
+    }
+    /* cout << "\t " << " " << bs.start_station << "\t" << "  " << bs.end_station
+         << "       " << bs.runtime << "       " << bs.busload << "     " << bs.ys;*/
+    cout << "\t\t" << bs.start_station << "\t\t" << bs.end_station << "\t\t" << bs.runtime << "\t\t" << bs.busload << "\t\t" << bs.ys;
+}
+
+/* 按车次查询  */
+void sy::search_train()
+{
+    int s;
+    cout << "输入要查询的车次: ";
+    cin >> s;
+    cout << "班次号\t" << "发车时间  " << "起始站  " << "终点站  " << "行车时间  " << "载客量  " << "已售票" << endl;
+    cout << s << "\t" << ticket[s - 1].bs.hour << ":" << ticket[s - 1].bs.minute << "\t" << ticket[s - 1].bs.start_station << "\t" << ticket[s - 1].bs.end_station
+        << "\t" << ticket[s - 1].bs.runtime << "\t" << ticket[s - 1].bs.busload << "\t" << ticket[s - 1].bs.ys << endl;
+}
+
+/*  按终点站查询  */
+void sy::search_station()
+{
+    char s[20];
+    int flag = 0;
+    cout << "要查询的终点站: ";
+    cin >> s;
+    int j;
+    cout << "查询结果:" << endl;
+    cout << "班次号\t" << "发车时间  " << "起始站  " << "终点站  " << "行车时间  " << "载客量  " << "已售票" << endl;
+    for (j = 0; j < n; j++)
+    {
+        if (strcmp(s, ticket[j].bs.end_station) == 0)
+        {
+            cout << j + 1 << "\t" << ticket[j].bs.hour << ":" << ticket[j].bs.minute << "\t" << ticket[j].bs.start_station << "\t" << ticket[j].bs.end_station
+                << "\t" << ticket[j].bs.runtime << "\t" << ticket[j].bs.busload << "\t" << ticket[j].bs.ys << endl;
+        }
+    }
+}
+
+void read()
+{
+    ifstream file("data.txt");  // 使用输入模式打开文件
+    if (!file.is_open())
+    {
+        cout << "文件打开失败" << endl;
+        return;
+    }
+    while (file >> ticket[n].bs.hour >> ticket[n].bs.minute >> ticket[n].bs.start_station
+        >> ticket[n].bs.end_station >> ticket[n].bs.runtime >> ticket[n].bs.busload >> ticket[n].bs.ys)
+    {
+        n++;
+    }
+    file.close();
+}
+
+/*  售票  */
+void sy::sp()
+{
+    int flag = 0;
+    int a;
+    cout << "输入售票班次号: ";
+    cin >> a;
+    tm* pt = localtime(&t);
+    if (ticket[a - 1].bs.ys < ticket[a - 1].bs.busload)
+    {
+        if (ticket[a - 1].bs.hour > pt->tm_hour)
+        {
+            flag = 1;
+        }
+        else
+        {
+            if (ticket[a - 1].bs.hour == pt->tm_hour && ticket[a - 1].bs.minute > pt->tm_min)
+            {
+                flag = 1;
+            }
+        }
+    }
+
+    if (flag == 1)
+    {
+        cout << "售票成功" << endl;
+        ticket[a - 1].bs.ys++;
+    }
+    else
+    {
+        cout << "票已售完" << endl;
+    }
+}
+
+/*  退票  */
+void sy::tp()
+{
+    int a;
+    cout << "退票的车次: ";
+    cin >> a;
+    tm* pt = localtime(&t);
+    int flag = 0;
+    if (ticket[a - 1].bs.hour > pt->tm_hour)
+    {
+        flag = 1;
+    }
+    else
+    {
+        if (ticket[a - 1].bs.hour == pt->tm_hour && ticket[a - 1].bs.minute > pt->tm_min)
+        {
+            flag = 1;
+        }
+    }
+    if (flag == 1)
+    {
+        cout << "退票成功" << endl;
+        ticket[a - 1].bs.ys--;
+    }
+    else
+    {
+        cout << "退票失败" << endl;
+    }
+}
+
+/*主菜单*/
+void menu()
+{
+    cout << "~~~~~~~~~~~~~~~~欢迎使用车票管理系统！~~~~~~~~~~~~~~~~" << endl;
+    cout << "              =========================" << endl;
+    cout << "                  1.录入车票信息        " << endl;
+    cout << "                  2.浏览车票信息        " << endl;
+    cout << "                  3.查询车票信息        " << endl;
+    cout << "                  4.售票                " << endl;
+    cout << "                  5.退票                " << endl;
+    cout << "                  6.退出系统            " << endl;
+
+}
+
+int main()
+{
+    menu();
+    read();
+    int m;
+    int f;
+    int z = 1;
+    sy p;
+    while (z == 1)
+    {
+        cout << "\n请选择: ";
+        cin >> m;
+        switch (m)
+        {
+        case 1: p.input(); break;//录入车票信息
+        case 2: p.browse(); break;//浏览车票信息
+        case 4: p.sp(); break;//售票
+        case 5: p.tp(); break;//退票
+        case 6: z = 0; break;//退出系统
+        case 3:
+            cout << "查询方式(按车次查询输入1，按终点站查询输入2):";
+            cin >> f;
+            if (f == 1)
+            {
+                p.search_train();
+            }
+            if (f == 2)
+            {
+                p.search_station();
+            }
+        }
+    }
+    return 0;
+}
+
