@@ -4,18 +4,17 @@
 #include <ctime>
 #include <fstream>
 #include <algorithm>
+#include<string.h>
 
 using namespace std;
-
 time_t t = time(NULL);  //设置当前时间
-
 int n = 0;  //总车次
-
 void menu();
 
 class bus   //车票车次类
 {
 public:
+    string number;                      //车次号
     int hour;                           //发车时间（时）
     int minute;                         //发车时间（分）
     char start_station[20];             //起始站
@@ -56,6 +55,7 @@ void save()
     for (i = 0; i < n; i++)
     {
         //file << i + 1 << " ";//序号
+        file << ticket[i].bs.number << " ";
         file << ticket[i].bs.hour << " ";
         file << ticket[i].bs.minute << " ";
         file << ticket[i].bs.start_station << " ";
@@ -71,6 +71,8 @@ void save()
 /*  录入车次信息  */
 void sy::input()
 {
+    cout << "输入车次号";
+    cin >> ticket[n].bs.number;
     cout << "输入发车点数和分钟:";
     cin >> ticket[n].bs.hour >> ticket[n].bs.minute;
     cout << "输入起站和终点站:";
@@ -96,7 +98,7 @@ void sy::browse()
     cout << setw(2) << setfill('0') << pt->tm_min << endl;
     // 输出UI
     cout << "车次信息:" << endl;
-    cout << "班次号" << "\t发车时间" << "\t起始站" << "  \t终点站" << "  \t行车时间" << "  \t载客量" << "  \t已售票" << "  \t状态" << endl;
+    cout << "车次号" << "\t\t发车时间" << "\t起始站" << "  \t终点站" << "  \t行车时间" << "  \t载客量" << "  \t已售票" << "  \t状态" << endl;
     int j;
     for (j = 0; j < n; j++)
     {
@@ -118,7 +120,7 @@ void sy::browse()
 /*  显示  */
 void sy::display(int a)
 {
-    cout << a << "\t" << bs.hour << ":";
+    cout << bs.number << "\t\t" << bs.hour << ":";
     if (bs.minute == 0)
     {
         cout << "00";
@@ -133,30 +135,36 @@ void sy::display(int a)
 /* 按车次查询  */
 void sy::search_train()
 {
-    int s;
+    string a;
+    int s = 0;
     cout << "输入要查询的车次: ";
-    cin >> s;
-    if (s > n)
+    cin >> a;
+    for (int xuhao = 0; xuhao < n; xuhao++)
     {
-        cout << "抱歉，没有此班车";
+        if (a == ticket[xuhao - 1].bs.number)
+        {
+            s = xuhao;
+            cout << "车次号" << "\t发车时间" << "\t起始站" << "  \t终点站" << "  \t行车时间" << "  \t载客量" << "  \t已售票" << "  \t状态" << endl;
+            cout << ticket[s - 1].bs.number << "\t" << ticket[s - 1].bs.hour << ":" << ticket[s - 1].bs.minute << "\t\t" << ticket[s - 1].bs.start_station << "\t\t" << ticket[s - 1].bs.end_station
+                << "\t\t" << ticket[s - 1].bs.runtime << "\t\t" << ticket[s - 1].bs.busload << "\t\t" << ticket[s - 1].bs.ys;
+            tm* pt = localtime(&t);
+            cout << "\t\t";
+            if (ticket[s].bs.hour < pt->tm_hour ||
+                (ticket[s].bs.hour == pt->tm_hour && ticket[s].bs.minute <= pt->tm_min))
+            {
+                cout << "此班已发出" << endl;
+            }
+            else
+            {
+                cout << "此班未发出" << endl;
+            }
+        }
     }
-    else
+    if (s)
     {
-        cout << "班次号" << "\t发车时间" << "\t起始站" << "  \t终点站" << "  \t行车时间" << "  \t载客量" << "  \t已售票" << "  \t状态" << endl;
-        cout << s << "\t" << ticket[s - 1].bs.hour << ":" << ticket[s - 1].bs.minute << "\t\t" << ticket[s - 1].bs.start_station << "\t\t" << ticket[s - 1].bs.end_station
-            << "\t\t" << ticket[s - 1].bs.runtime << "\t\t" << ticket[s - 1].bs.busload << "\t\t" << ticket[s - 1].bs.ys;
-        tm* pt = localtime(&t);
-        cout << "\t\t";
-        if (ticket[s].bs.hour < pt->tm_hour ||
-            (ticket[s].bs.hour == pt->tm_hour && ticket[s].bs.minute <= pt->tm_min))
-        {
-            cout << "此班已发出" << endl;
-        }
-        else
-        {
-            cout << "此班未发出" << endl;
-        }
+        cout << "未查询到此车" << endl;
     }
+
     menu();
 }
 
@@ -178,7 +186,7 @@ void sy::search_station2()
         }
         if (shuzi != 0 && strcmp(s, ticket[j].bs.start_station) == 0)
         {
-            cout << "班次号" << "\t发车时间" << "\t起始站" << "  \t终点站" << "  \t行车时间" << "  \t载客量" << "  \t已售票" << "  \t状态" << endl;
+            cout << "车次号" << "\t发车时间" << "\t起始站" << "  \t终点站" << "  \t行车时间" << "  \t载客量" << "  \t已售票" << "  \t状态" << endl;
             cout << j + 1 << "\t" << ticket[j].bs.hour << ":" << ticket[j].bs.minute << "\t\t" << ticket[j].bs.start_station << "\t\t" << ticket[j].bs.end_station
                 << "\t\t" << ticket[j].bs.runtime << "\t\t" << ticket[j].bs.busload << "\t\t" << ticket[j].bs.ys;
             int p = j;
@@ -222,7 +230,7 @@ void sy::search_station()
         }
         if (strcmp(s, ticket[j].bs.end_station) == 0 && shuzi2 != 0)
         {
-            cout << "班次号" << "\t发车时间" << "\t起始站" << "  \t终点站" << "  \t行车时间" << "  \t载客量" << "  \t已售票" << "  \t状态" << endl;
+            cout << "车次号" << "\t发车时间" << "\t起始站" << "  \t终点站" << "  \t行车时间" << "  \t载客量" << "  \t已售票" << "  \t状态" << endl;
             cout << j + 1 << "\t" << ticket[j].bs.hour << ":" << ticket[j].bs.minute << "\t\t" << ticket[j].bs.start_station << "\t\t" << ticket[j].bs.end_station
                 << "\t\t" << ticket[j].bs.runtime << "\t\t" << ticket[j].bs.busload << "\t\t" << ticket[j].bs.ys;
             tm* pt = localtime(&t);
@@ -246,6 +254,7 @@ void sy::search_station()
     menu();
 }
 
+/*  读取文件中的数据  */
 void read()
 {
     ifstream file("data.txt");  // 使用输入模式打开文件
@@ -254,7 +263,7 @@ void read()
         cout << "文件打开失败" << endl;
         return;
     }
-    while (file >> ticket[n].bs.hour >> ticket[n].bs.minute >> ticket[n].bs.start_station
+    while (file >> ticket[n].bs.number >> ticket[n].bs.hour >> ticket[n].bs.minute >> ticket[n].bs.start_station
         >> ticket[n].bs.end_station >> ticket[n].bs.runtime >> ticket[n].bs.busload >> ticket[n].bs.ys)
     {
         n++;
@@ -262,209 +271,350 @@ void read()
     file.close();
 }
 
-/*  售票  */
+/*  购票  */
 void sy::sp()
 {
     int flag = 0;
-    int a;
-    cout << "输入所购票班次号: ";
+    string a;
+    int b;                                    //a为购票车次号，b为购票张数
+    cout << "输入所购票车次号: ";
     cin >> a;
-    cout << "班次信息如下" << endl;
-    cout << "班次号" << "\t发车时间" << "\t起始站" << "  \t终点站" << "  \t行车时间" << "  \t载客量" << "  \t已售票" << endl;
-    cout << a << "\t" << ticket[a - 1].bs.hour << ":" << ticket[a - 1].bs.minute << "\t\t" << ticket[a - 1].bs.start_station << "\t\t" << ticket[a - 1].bs.end_station
-        << "\t\t" << ticket[a - 1].bs.runtime << "\t\t" << ticket[a - 1].bs.busload << "\t\t" << ticket[a - 1].bs.ys << endl;
-    tm* pt = localtime(&t);
-    if (ticket[a - 1].bs.ys < ticket[a - 1].bs.busload)
+    int d, e;                                //d为判断车次号的，e赋值为序号
+    for (d = 1; d <= n; d++)
     {
-        if (ticket[a - 1].bs.hour > pt->tm_hour)
+        if (a == ticket[d - 1].bs.number)
         {
-            flag = 1;
-        }
-        else
-        {
-            if (ticket[a - 1].bs.hour == pt->tm_hour && ticket[a - 1].bs.minute > pt->tm_min)
-            {
-                flag = 1;
-            }
+            e = d;
+            break;
         }
     }
-
-    if (flag == 1)
+    cout << "车次信息如下" << endl;
+    cout << "车次号" << "\t发车时间" << "\t起始站" << "  \t终点站" << "  \t行车时间" << "  \t载客量" << "  \t已售票" << endl;
+    cout << ticket[e - 1].bs.number << "\t" << ticket[e - 1].bs.hour << ":" << ticket[e - 1].bs.minute << "\t\t" << ticket[e - 1].bs.start_station << "\t\t" << ticket[e - 1].bs.end_station
+        << "\t\t" << ticket[e - 1].bs.runtime << "\t\t" << ticket[e - 1].bs.busload << "\t\t" << ticket[e - 1].bs.ys << endl;
+    cout << "输入购票的张数" << endl;
+    cin >> b;
+    tm* pt = localtime(&t);
+    if (ticket[e - 1].bs.hour > pt->tm_hour)
+    {
+        flag = 1;
+    }
+    else if (ticket[e - 1].bs.hour == pt->tm_hour && ticket[e - 1].bs.minute > pt->tm_min)
+    {
+        flag = 1;
+    }
+    if (flag == 1 && ticket[e - 1].bs.ys < ticket[e - 1].bs.busload && b <= ticket[e - 1].bs.busload - ticket[e - 1].bs.ys)
     {
         cout << "购票成功" << endl;
-        ticket[a - 1].bs.ys++;
+        for (int c = 1; c <= b; c++)
+        {
+            ticket[e - 1].bs.ys++;
+        }
     }
-    else if (ticket[a - 1].bs.ys < ticket[a - 1].bs.busload)
+    else if (flag != 1)
     {
-        cout << "票已售完" << endl;
+        cout << "此车辆已经开出" << endl;
     }
-    else
+    else if (ticket[e - 1].bs.ys > ticket[e - 1].bs.busload && flag == 1)
     {
-        cout << "车已经开出";
+        cout << "票已经售完" << endl;
+    }
+    else if (b <= ticket[e - 1].bs.busload - ticket[e - 1].bs.ys)
+    {
+        cout << "购票数超出上限" << endl;
     }
 }
 
 /*  退票  */
 void sy::tp()
 {
-    int a;
+    string a;
+    int b, c, e;                                   //a记录退票车次号,c记录张数,e记录对应的序号
     cout << "退票的车次: ";
     cin >> a;
-    cout << "班次信息如下" << endl;
-    cout << "班次号" << "\t发车时间" << "\t起始站" << "  \t终点站" << "  \t行车时间" << "  \t载客量" << "  \t已售票" << endl;
-    cout << a << "\t" << ticket[a - 1].bs.hour << ":" << ticket[a - 1].bs.minute << "\t\t" << ticket[a - 1].bs.start_station << "\t\t" << ticket[a - 1].bs.end_station
-        << "\t\t" << ticket[a - 1].bs.runtime << "\t\t" << ticket[a - 1].bs.busload << "\t\t" << ticket[a - 1].bs.ys << endl;
+    for (int d = 1; d <= n; d++)
+    {
+        if (a == ticket[d - 1].bs.number)
+        {
+            e = d;
+        }
+    }
+
+    cout << "车次信息如下" << endl;
+    cout << "车次号" << "\t发车时间" << "\t起始站" << "  \t终点站" << "  \t行车时间" << "  \t载客量" << "  \t已售票" << endl;
+    cout << ticket[e - 1].bs.number << "\t" << ticket[e - 1].bs.hour << ":" << ticket[e - 1].bs.minute << "\t\t" << ticket[e - 1].bs.start_station << "\t\t" << ticket[e - 1].bs.end_station
+        << "\t\t" << ticket[e - 1].bs.runtime << "\t\t" << ticket[e - 1].bs.busload << "\t\t" << ticket[e - 1].bs.ys << endl;
+    cout << "请输入退票的张数" << endl;
+    cin >> c;
     tm* pt = localtime(&t);
     int flag = 0;
-    if (ticket[a - 1].bs.hour > pt->tm_hour)
+    if (ticket[e - 1].bs.hour > pt->tm_hour)
     {
         flag = 1;
     }
     else
     {
-        if (ticket[a - 1].bs.hour == pt->tm_hour && ticket[a - 1].bs.minute > pt->tm_min)
+        if (ticket[e - 1].bs.hour == pt->tm_hour && ticket[e - 1].bs.minute > pt->tm_min)
         {
             flag = 1;
         }
     }
-    if (flag == 1)
+    if (flag == 1 && ticket[e - 1].bs.ys >= c)
     {
         cout << "退票成功" << endl;
-        ticket[a - 1].bs.ys--;
+        for (int b = 1; b <= c; b++)
+        {
+            ticket[e - 1].bs.ys--;
+        }
     }
     else
     {
-        cout << "退票失败" << endl;
+        cout << "退票张数超出" << endl;
     }
     menu();
 }
 
-/* 产出车次记录的函数 */
+/* 删除车次记录的函数 */
 void sy::delete_train()
 {
-    char start[20], end[20];
-    cout << "输入要删除的起点站和终点站: ";
-    cin >> start >> end;
-
-    int foundIndices[1000];
-    int foundCount = 0;                     //用来为被筛选出来的数据排序
-
-    // 查找匹配的车次记录
-    for (int i = 0; i < n; i++)
-    {
-        if (strcmp(ticket[i].bs.start_station, start) == 0 && strcmp(ticket[i].bs.end_station, end) == 0)// 用比较函数找到起点终点都符合所有信息
-        {
-            foundIndices[foundCount++] = i;       //对应记录本来的顺序
-        }
-    }
-
-    if (foundCount == 0)
-    {
-        cout << "没有找到匹配的车次记录" << endl;
-        return;
-    }
-
-    cout << "找到以下匹配的车次记录:" << endl;
-    cout << "序号\t班次号\t发车时间\t起始站\t\t终点站\t\t行车时间\t载客量\t\t已售票" << endl;
-
-    for (int i = 0; i < foundCount; i++)
-    {
-        cout << i + 1 << "\t";                                                                      //输出新序号
-        ticket[foundIndices[i]].display(foundIndices[i] + 1);                                       //输出车票信息
-        cout << endl;
-    }
-
-    int choice;                                                                                     //选择其中之一进行删除
-    cout << "输入要删除的记录序号: ";
-    cin >> choice;
-
-    if (choice < 1 || choice > foundCount)
-    {
-        cout << "抱歉，没有这个选项" << endl;
-        return;
-    }
-
-    int deleteIndex = foundIndices[choice - 1];
-
-    // 删除记录
-    for (int i = deleteIndex; i < n - 1; i++)
-    {
-        ticket[i] = ticket[i + 1];                                                                     //用覆盖法删除数据
-    }
-    n--;
-
-    cout << "车次记录删除成功" << endl;
-    save();
-    menu();
-}
-
-//修改车次记录的函数
-void sy::change_train()
-{
-    char start[20], end[20];
-    cout << "输入要修改车次起点站和终点站: ";
-    cin >> start >> end;
-
-    int foundIndices[1000];
-    int foundCount = 0;
-
-    // 查找匹配的车次记录
-    for (int i = 0; i < n; i++)
-    {
-        if (strcmp(ticket[i].bs.start_station, start) == 0 && strcmp(ticket[i].bs.end_station, end) == 0)
-        {
-            foundIndices[foundCount++] = i;
-        }
-    }
-
-    if (foundCount == 0)
-    {
-        cout << "没有找到匹配的车次记录" << endl;
-        return;
-    }
-
-    cout << "找到以下匹配的车次记录:" << endl;
-    cout << "序号\t班次号\t发车时间\t起始站\t\t终点站\t\t行车时间\t载客量\t\t已售票" << endl;
-    for (int i = 0; i < foundCount; i++)
-    {
-        cout << i + 1 << "\t";
-        ticket[foundIndices[i]].display(foundIndices[i] + 1);
-        cout << endl;
-    }
-
     int choice;
-    cout << "输入要修改的记录序号: ";
+    cout << "选择查找方式: 1. 通过车次号 2. 通过起点站和终点站: ";
     cin >> choice;
 
-    if (choice < 1 || choice > foundCount)
+    if (choice == 1)
+    {
+        string train_number;
+        cout << "输入要删除的车次号: ";
+        cin >> train_number;
+
+        int foundIndex = -1;  // 用来存储找到的车次索引
+
+        // 查找匹配的车次记录
+        for (int i = 0; i < n; i++)
+        {
+            if (ticket[i].bs.number == train_number)  // 用循环比较函数找到车次号符合的记录
+            {
+                foundIndex = i;
+                break;  // 找到就退出循环
+            }
+        }
+
+        if (foundIndex == -1)
+        {
+            cout << "没有找到匹配的车次记录" << endl;
+            return;
+        }
+
+        cout << "找到以下匹配的车次记录:" << endl;
+        cout << "序号\t班次号\t\t发车时间\t起始站\t\t终点站\t\t行车时间\t载客量\t\t已售票" << endl;
+
+        cout << "1\t";  // 序号
+        ticket[foundIndex].display(1);  // 输出信息
+        cout << endl;
+
+        char confirm;
+        cout << "确认要删除该记录吗？(y/n): ";
+        cin >> confirm;
+
+        if (confirm != 'Y' && confirm != 'y')
+        {
+            cout << "操作取消" << endl;
+            return;
+        }
+
+        for (int i = foundIndex; i < n - 1; i++)
+        {
+            ticket[i] = ticket[i + 1];  // 用覆盖法删除数据
+        }
+        n--;
+        cout << "车次记录删除成功" << endl;
+        save();
+        menu();
+    }
+    else if (choice == 2)
+    {
+        string start, end;
+        cout << "输入要删除的起点站和终点站: ";
+        cin >> start >> end;
+
+        int foundIndices[1000];
+        int foundCount = 0;  // 用来为被筛选出来的数据排序
+
+        // 查找匹配的车次记录
+        for (int i = 0; i < n; i++)
+        {
+            if (ticket[i].bs.start_station == start && ticket[i].bs.end_station == end) // 用比较函数找到起点终点都符合所有信息
+            {
+                foundIndices[foundCount++] = i;  // 对应记录本来的顺序
+            }
+        }
+
+        if (foundCount == 0)
+        {
+            cout << "没有找到匹配的车次记录" << endl;
+            return;
+        }
+
+        cout << "找到以下匹配的车次记录:" << endl;
+        cout << "序号\t班次号\t发车时间\t起始站\t终点站\t行车时间\t载客量\t已售票" << endl;
+
+        for (int i = 0; i < foundCount; i++)
+        {
+            cout << i + 1 << "\t";  // 输出新序号
+            ticket[foundIndices[i]].display(foundIndices[i] + 1);  // 输出车票信息
+            cout << endl;
+        }
+
+        int deleteChoice;  // 选择其中之一进行删除
+        cout << "输入要删除的记录序号: ";
+        cin >> deleteChoice;
+
+        if (deleteChoice < 1 || deleteChoice > foundCount)
+        {
+            cout << "抱歉，没有这个选项" << endl;
+            return;
+        }
+
+        int deleteIndex = foundIndices[deleteChoice - 1];
+        for (int i = deleteIndex; i < n - 1; i++)
+        {
+            ticket[i] = ticket[i + 1];  // 用覆盖法删除数据
+        }
+        n--;
+        cout << "车次记录删除成功" << endl;
+        save();
+        menu();
+    }
+    else
     {
         cout << "无效的选择" << endl;
         return;
     }
-
-    int deleteIndex = foundIndices[choice - 1];
-
-    // 修改记录
-    for (int i = deleteIndex; i < n - 1; i++)
-    {
-        cout << "输入发车点数和分钟:";
-        cin >> ticket[i].bs.hour >> ticket[i].bs.minute;
-        cout << "输入起站和终点站:";
-        cin >> ticket[i].bs.start_station >> ticket[i].bs.end_station;
-        cout << "输入运行时间:";
-        cin >> ticket[i].bs.runtime;
-        cout << "输入载客量:";
-        cin >> ticket[i].bs.busload;
-        cout << "输入已售票:";
-        cin >> ticket[i].bs.ys;
-        cout << "已经完成输入:" << endl;
-        //ticket[i] = ticket[i + 1];
-    }
-    //n--;
-    cout << "车次记录修改成功" << endl;
-    save();
-    menu();
 }
+
+//修改车次的函数
+void sy::change_train()
+{
+    int choice;
+    cout << "选择查找方式: 1. 通过车次号 2. 通过起点站和终点站: ";
+    cin >> choice;
+
+    if (choice == 1)
+    {
+        string train_number;
+        cout << "输入要修改的车次号: ";
+        cin >> train_number;
+
+        int foundIndex = -1;  // 用来存储找到的车次索引
+
+        // 查找匹配的车次记录
+        for (int i = 0; i < n; i++)
+        {
+            if (ticket[i].bs.number == train_number)  // 用比较函数找到车次号符合的记录
+            {
+                foundIndex = i;
+                break;  // 找到就退出循环
+            }
+        }
+
+        if (foundIndex == -1)
+        {
+            cout << "没有找到匹配的车次记录" << endl;
+            return;
+        }
+
+        cout << "找到以下匹配的车次记录:" << endl;
+        cout << "序号\t班次号\t\t发车时间\t起始站\t\t终点站\t\t行车时间\t载客量\t\t已售票" << endl;
+
+        cout << "1\t";  // 输出序号
+        ticket[foundIndex].display(1);  // 输出车票信息
+        cout << endl;
+
+        int i = foundIndex;
+        // 修改记录
+        cout << "输入发车点数和分钟: ";
+        cin >> ticket[i].bs.hour >> ticket[i].bs.minute;
+        cout << "输入起站和终点站: ";
+        cin >> ticket[i].bs.start_station >> ticket[i].bs.end_station;
+        cout << "输入运行时间: ";
+        cin >> ticket[i].bs.runtime;
+        cout << "输入载客量: ";
+        cin >> ticket[i].bs.busload;
+        cout << "输入已售票: ";
+        cin >> ticket[i].bs.ys;
+        cout << "已经完成输入: " << endl;
+        cout << "车次记录修改成功" << endl;
+        save();
+        menu();
+    }
+    else if (choice == 2)
+    {
+        string start, end;
+        cout << "输入要修改车次起点站和终点站: ";
+        cin >> start >> end;
+
+        int foundIndices[1000];
+        int foundCount = 0;
+
+        // 查找匹配的车次记录
+        for (int i = 0; i < n; i++)
+        {
+            if (ticket[i].bs.start_station == start && ticket[i].bs.end_station == end)
+            {
+                foundIndices[foundCount++] = i;
+            }
+        }
+
+        if (foundCount == 0)
+        {
+            cout << "没有找到匹配的车次记录" << endl;
+            return;
+        }
+
+        cout << "找到以下匹配的车次记录:" << endl;
+        cout << "序号\t班次号\t发车时间\t起始站\t终点站\t行车时间\t载客量\t已售票" << endl;
+        for (int i = 0; i < foundCount; i++)
+        {
+            cout << i + 1 << "\t";
+            ticket[foundIndices[i]].display(foundIndices[i] + 1);
+            cout << endl;
+        }
+
+        int modifyChoice;
+        cout << "输入要修改的记录序号: ";
+        cin >> modifyChoice;
+
+        if (modifyChoice < 1 || modifyChoice > foundCount)
+        {
+            cout << "无效的选择" << endl;
+            return;
+        }
+
+        int modifyIndex = foundIndices[modifyChoice - 1];
+        int i = modifyIndex;
+        // 修改记录
+        cout << "输入发车点数和分钟: ";
+        cin >> ticket[i].bs.hour >> ticket[i].bs.minute;
+        cout << "输入起站和终点站: ";
+        cin >> ticket[i].bs.start_station >> ticket[i].bs.end_station;
+        cout << "输入运行时间: ";
+        cin >> ticket[i].bs.runtime;
+        cout << "输入载客量: ";
+        cin >> ticket[i].bs.busload;
+        cout << "输入已售票: ";
+        cin >> ticket[i].bs.ys;
+        cout << "已经完成输入: " << endl;
+        cout << "车次记录修改成功" << endl;
+        save();
+        menu();
+    }
+    else
+    {
+        cout << "无效的选择" << endl;
+        return;
+    }
+}
+
 /*排序函数*/
 void sy::sort_tickets()
 {
@@ -475,8 +625,9 @@ void sy::sort_tickets()
     switch (choice)
     {
     case 1: // 按车次号排序
-        sort(ticket, ticket + n, [](sy& a, sy& b) {
-            return strcmp(a.bs.start_station, b.bs.start_station) < 0;
+        sort(ticket, ticket + n, [](const sy& a, const sy& b)
+            {
+                return a.bs.number < b.bs.number;
             });
         break;
     case 2: // 按发车时间排序
@@ -572,3 +723,4 @@ int main()
     }
     return 0;
 }
+
